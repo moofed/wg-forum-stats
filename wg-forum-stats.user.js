@@ -2,7 +2,7 @@
 // @name Wargaming.net Forums Player Stats
 // @namespace http://moofed.org
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.0.6
+// @version 0.0.9
 // @updateURL https://moofed.org/user.js/wg-forum-stats.user.js
 // @grant unsafeWindow
 // @require http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js
@@ -52,10 +52,10 @@ function displayWowpStats(data) {
       var winRate = wins / battles;
       var winRateText = Math.round(winRate*100) + '%';
       var winRateColor = getWinRateColor(winRate);
-      statsElement.removeClass('battles_count');
+      statsElement.removeClass('margin-top');
       statsElement.find("span.row_data").text(winRateText);
-      statsElement.find("span.row_title").text("Wins");
-      statsElement.children().css('color', winRateColor);
+      statsElement.find("span.row_title").text("wins");
+      statsElement.children().css('text-shadow', '0px 0px 10px ' + winRateColor);
       battlesElement.after(statsElement);
     } catch (e) {
       // Display nothing if stats not found.
