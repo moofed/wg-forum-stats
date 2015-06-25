@@ -2,10 +2,11 @@
 // @name Wargaming.net Forums Player Stats
 // @namespace http://moofed.org
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.3.5
+// @version 0.3.6
 // @grant none
 // @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
 // @match http://forum.worldofwarplanes.com/index.php?/topic/*
+// @match http://forum.worldoftanks.com/index.php?/topic/*
 // ==/UserScript==
 
 var applicationID = '1a9527aa13c541208a58009172f7cff9';
