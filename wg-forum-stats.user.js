@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name Wargaming.net Forums Player Stats
-// @namespace http://moofed.org
+// @namespace https://github.com/moofed/wg-forum-stats
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.3.6
+// @version 0.3.7
 // @grant none
-// @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
-// @match http://forum.worldofwarplanes.com/index.php?/topic/*
-// @match http://forum.worldoftanks.com/index.php?/topic/*
+// @downloadURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
+// @updateURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
+// @match *://forum.worldofwarplanes.com/index.php?/topic/*
+// @match *://forum.worldoftanks.com/index.php?/topic/*
 // ==/UserScript==
 
 var applicationID = '1a9527aa13c541208a58009172f7cff9';
