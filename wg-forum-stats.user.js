@@ -2,7 +2,7 @@
 // @name Wargaming.net Forums Player Stats
 // @namespace http://moofed.org
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.2.16
+// @version 0.2.23
 // @grant none
 // @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
 // @match http://forum.worldofwarplanes.com/index.php?/topic/*
@@ -74,10 +74,11 @@ function displayWowpStats(data) {
       statsElement.classList.remove('margin-top');
       $1("span.row_data", statsElement).textContent = winRateText;
       $1("span.row_title", statsElement).textContent = "wins";
-      //statsElement.children.style.text-shadow = '0px 0px 10px ' + winRateColor;
+      Array.prototype.forEach.call(statsElement.children, function(styleItem) {
+        styleItem.style['text-shadow'] = '0px 0px 10px ' + winRateColor;
+      });
       statsElement.setAttribute('title', winRate);
       battlesElement.parentElement.insertBefore(statsElement, battlesElement.nextSibling);
-      //battlesElement.insertAdjacentHTML('afterend', statsElement);
     } catch (e) {
       // Display nothing if stats not found.
       console.log(e);
