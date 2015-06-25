@@ -2,7 +2,7 @@
 // @name Wargaming.net Forums Player Stats
 // @namespace http://moofed.org
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.2.23
+// @version 0.3.5
 // @grant none
 // @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
 // @match http://forum.worldofwarplanes.com/index.php?/topic/*
@@ -25,6 +25,10 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
+function round(value, decimals) {
+  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
 function getCORS(url, success) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
@@ -40,7 +44,18 @@ function getWowpPlayerData(callback, accountList) {
     "&account_id=" + accountList;
   getCORS(url, function(request) {
     var response = request.currentTarget.response || request.target.responseTetxt;
-    callback(JSON.parse(response));
+    callback('Planes', JSON.parse(response));
+  });
+}
+
+function getWotPlayerData(callback, accountList) {
+  var url = "https://api.worldoftanks.com/wot/account/info/" +
+    "?application_id=" + applicationID +
+    "&fields=statistics.all.battles,statistics.all.wins" +
+    "&account_id=" + accountList;
+  getCORS(url, function(request) {
+    var response = request.currentTarget.response || request.target.responseTetxt;
+    callback('Tanks', JSON.parse(response));
   });
 }
 
@@ -57,7 +72,7 @@ function buildAccountList() {
   //return Array.prototype.filter.call(accountList, onlyUnique).join(",");
 }
 
-function displayWowpStats(data) {
+function displayStats(label, data) {
   var authorDivs = $("div.author_info");
   Array.prototype.forEach.call(authorDivs, function(item) {
     try {
@@ -66,18 +81,22 @@ function displayWowpStats(data) {
       var battlesElement = $1("div.user_details li.battles_count", item);
       var statsElement = battlesElement.cloneNode(true);
       var stats = data.data[account_id].statistics;
+      if (stats.all != undefined) {
+        // Workaround for WoT having multiple statistics types.
+        stats = stats.all;
+      }
       var wins = stats.wins;
       var battles = stats.battles;
       var winRate = wins / battles;
-      var winRateText = Math.round(winRate*100) + '%';
+      var winRateText = round(winRate*100, 1) + '%';
       var winRateColor = getWinRateColor(winRate);
       statsElement.classList.remove('margin-top');
       $1("span.row_data", statsElement).textContent = winRateText;
-      $1("span.row_title", statsElement).textContent = "wins";
+      $1("span.row_title", statsElement).textContent = label + " wins";
       Array.prototype.forEach.call(statsElement.children, function(styleItem) {
         styleItem.style['text-shadow'] = '0px 0px 10px ' + winRateColor;
       });
-      statsElement.setAttribute('title', winRate);
+      statsElement.setAttribute('title', battles + ' battles');
       battlesElement.parentElement.insertBefore(statsElement, battlesElement.nextSibling);
     } catch (e) {
       // Display nothing if stats not found.
@@ -97,7 +116,8 @@ function getWinRateColor(winRate) {
 
 function run() {
   var accountList = buildAccountList();
-  getWowpPlayerData(displayWowpStats, accountList);
+  getWotPlayerData(displayStats, accountList)
+  getWowpPlayerData(displayStats, accountList);
 }
 
 // in case the document is already rendered
