@@ -2,64 +2,85 @@
 // @name Wargaming.net Forums Player Stats
 // @namespace http://moofed.org
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.1.4
-// @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
+// @version 0.2.16
 // @grant none
-// @require https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js
+// @downloadURL https://moofed.org/user.js/wg-forum-stats.user.js
 // @match http://forum.worldofwarplanes.com/index.php?/topic/*
 // ==/UserScript==
-
-this.jQuery = jQuery.noConflict(true);
 
 var applicationID = '1a9527aa13c541208a58009172f7cff9';
 var winRateColors = [[0.0, '#FE0E00'], [0.465, '#FE7903'], [0.485, '#F8F400'], [0.515, '#60FF00'], [0.565, '#02C9B3'], [0.645, '#D042F3'], [1.0, '#DEADBEEF']];
 
-function jQueryArray() {
-  (function(e){var t={};var n=function(e){for(var t=0;t<e.length;t++){if(!(e[t]instanceof Array)){throw new Error("Every argument must be an array!")}}};t.distinct=function(t){if(arguments.length!=1)throw new Error("There must be exactly 1 array argument!");n(arguments);var r=[];for(var i=0;i<t.length;i++){var s=t[i];if(e.inArray(s,r)===-1){r.push(s)}}return r};t.union=function(){if(arguments.length<2)throw new Error("There must be minimum 2 array arguments!");n(arguments);var t=this.distinct(arguments[0]);for(var r=1;r<arguments.length;r++){var i=arguments[r];for(var s=0;s<i.length;s++){var o=i[s];if(e.inArray(o,t)===-1){t.push(o)}}}return t};t.intersect=function(){if(arguments.length<2)throw new Error("There must be minimum 2 array arguments!");n(arguments);var t=[];var r=this.distinct(arguments[0]);if(r.length===0)return[];for(var i=0;i<r.length;i++){var s=r[i];var o=true;for(var u=1;u<arguments.length;u++){var a=arguments[u];if(a.length==0)return[];if(e.inArray(s,a)===-1){o=false;break}}if(o){t.push(s)}}return t};t.except=function(){if(arguments.length<2)throw new Error("There must be minimum 2 array arguments!");n(arguments);var t=[];var r=this.distinct(arguments[0]);var i=[];for(var s=1;s<arguments.length;s++){var o=arguments[s];i=i.concat(o)}for(var s=0;s<r.length;s++){var u=r[s];if(e.inArray(u,i)===-1){t.push(u)}}return t};e.arrayUtilities=t;e.distinct=t.distinct;e.union=t.union;e.intersect=t.intersect;e.except=t.except})(jQuery);
+// select a list of matching elements, context is optional
+function $(selector, context) {
+  return (context || document).querySelectorAll(selector);
+}
+
+// select the first match only, context is optional
+function $1(selector, context) {
+  return (context || document).querySelector(selector);
+}
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+function getCORS(url, success) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.onload = success;
+  xhr.send();
+  return xhr;
 }
 
 function getWowpPlayerData(callback, accountList) {
-  jQuery.getJSON("https://api.worldofwarplanes.com/wowp/account/info/",
-    {
-      fields: 'statistics.battles,statistics.wins',
-      application_id: applicationID,
-      account_id: accountList
-    },
-    function(data) {
-      callback(data);
-    });
+  var url = "https://api.worldofwarplanes.com/wowp/account/info/" +
+    "?application_id=" + applicationID +
+    "&fields=statistics.battles,statistics.wins" +
+    "&account_id=" + accountList;
+  getCORS(url, function(request) {
+    var response = request.currentTarget.response || request.target.responseTetxt;
+    callback(JSON.parse(response));
+  });
 }
 
 function buildAccountList() {
-  var accountList = jQuery("div.author_info").map( function(i, e) {
-    var profileURL = jQuery(e).find("a.name").attr("href");
-    var account_id = profileURL.match(/^https?:\/\/.*\w+-(\d+)\/$/)[1];
-    return account_id;
-  }).get();
-  return jQuery.distinct(accountList).join(",");
+  var accountList = $("div.author_info")
+  var accountIds = [];
+  Array.prototype.forEach.call(accountList, function(item) {
+    var profileURL = $1("a.name", item).getAttribute("href");
+    var accountId = profileURL.match(/^https?:\/\/.*\w+-(\d+)\/$/)[1];
+    accountIds.push(accountId);
+  });
+  return accountIds.join(',');
+  //return accountIds.filter(onlyUnique).join(',');
+  //return Array.prototype.filter.call(accountList, onlyUnique).join(",");
 }
 
 function displayWowpStats(data) {
-  jQuery("div.author_info").each( function() {
+  var authorDivs = $("div.author_info");
+  Array.prototype.forEach.call(authorDivs, function(item) {
     try {
-      var profileURL = jQuery(this).find("a.name").attr("href");
+      var profileURL = $1("a.name", item).getAttribute("href");
       var account_id = profileURL.match(/^https?:\/\/.*\w+-(\d+)\/$/)[1];
-      var battlesElement = jQuery(this).find("div.user_details").find("li.battles_count");
-      var statsElement = battlesElement.clone();
+      var battlesElement = $1("div.user_details li.battles_count", item);
+      var statsElement = battlesElement.cloneNode(true);
       var stats = data.data[account_id].statistics;
       var wins = stats.wins;
       var battles = stats.battles;
       var winRate = wins / battles;
       var winRateText = Math.round(winRate*100) + '%';
       var winRateColor = getWinRateColor(winRate);
-      statsElement.removeClass('margin-top');
-      statsElement.find("span.row_data").text(winRateText);
-      statsElement.find("span.row_title").text("wins");
-      statsElement.children().css('text-shadow', '0px 0px 10px ' + winRateColor);
-      statsElement.attr('title', winRate);
-      battlesElement.after(statsElement);
+      statsElement.classList.remove('margin-top');
+      $1("span.row_data", statsElement).textContent = winRateText;
+      $1("span.row_title", statsElement).textContent = "wins";
+      //statsElement.children.style.text-shadow = '0px 0px 10px ' + winRateColor;
+      statsElement.setAttribute('title', winRate);
+      battlesElement.parentElement.insertBefore(statsElement, battlesElement.nextSibling);
+      //battlesElement.insertAdjacentHTML('afterend', statsElement);
     } catch (e) {
       // Display nothing if stats not found.
+      console.log(e);
     }});
 }
 
@@ -73,8 +94,16 @@ function getWinRateColor(winRate) {
   return color;
 }
 
-jQuery( document ).ready(function() {
-  jQueryArray();
+function run() {
   var accountList = buildAccountList();
   getWowpPlayerData(displayWowpStats, accountList);
+}
+
+// in case the document is already rendered
+if (document.readyState!='loading') run();
+// modern browsers
+  else if (document.addEventListener) document.addEventListener('DOMContentLoaded', run);
+// IE <= 8
+  else document.attachEvent('onreadystatechange', function(){
+    if (document.readyState=='complete') run();
 });
