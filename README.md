@@ -2,8 +2,10 @@
 A user script for displaying win rate statistics for authors of Wargaming.net forum posts.
 
 ### Features
-* Supports the NA forums for WoT and WoWP
-* Color coded winrates for Wot and WoWP displayed in the sidebar
+* Supports the NA forums for WoT, WoWP and WoWS
+* Color coded winrates displayed in the sidebar
+* Battle count displayed as tooltip
+* A game is not displayed if that player has 0 battles
 
 ### Install Instructions
 #### Chrome
