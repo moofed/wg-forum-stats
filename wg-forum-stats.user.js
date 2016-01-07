@@ -3,7 +3,7 @@
 // @author moofed@gmail.com
 // @namespace https://github.com/moofed/wg-forum-stats
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.3.9beta1
+// @version 0.4.0
 // @grant none
 // @downloadURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
 // @updateURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
