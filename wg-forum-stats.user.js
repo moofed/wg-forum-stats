@@ -3,7 +3,7 @@
 // @author moofed@gmail.com
 // @namespace https://github.com/moofed/wg-forum-stats
 // @description Displays statistics for players of Wargaming.net games.
-// @version 0.3.8
+// @version 0.4.0
 // @grant none
 // @downloadURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
 // @updateURL https://raw.githubusercontent.com/moofed/wg-forum-stats/master/wg-forum-stats.user.js
@@ -14,6 +14,9 @@
 
 var applicationID = '1a9527aa13c541208a58009172f7cff9';
 var winRateColors = [[0.0, '#FE0E00'], [0.465, '#FE7903'], [0.485, '#F8F400'], [0.515, '#60FF00'], [0.565, '#02C9B3'], [0.645, '#D042F3'], [1.0, '#DEADBEEF']];
+var profileURLs = { Tanks: "http://worldoftanks.com/en/community/accounts/%{account_id}-%{nickname}",
+                    Planes: "http://worldofwarplanes.com/community/players/%{account_id}-%{nickname}",
+                    Ships: "http://worldofwarships.com/en/community/accounts/%{account_id}-%{nickname}"};
 
 // select a list of matching elements, context is optional
 function $(selector, context) {
@@ -44,7 +47,7 @@ function getCORS(url, success) {
 function getWowpPlayerData(callback, accountList) {
   var url = "https://api.worldofwarplanes.com/wowp/account/info/" +
     "?application_id=" + applicationID +
-    "&fields=statistics.battles,statistics.wins" +
+    "&fields=account_id,nickname,statistics.battles,statistics.wins" +
     "&account_id=" + accountList;
   getCORS(url, function(request) {
     var response = request.currentTarget.response || request.target.responseTetxt;
@@ -55,7 +58,7 @@ function getWowpPlayerData(callback, accountList) {
 function getWotPlayerData(callback, accountList) {
   var url = "https://api.worldoftanks.com/wot/account/info/" +
     "?application_id=" + applicationID +
-    "&fields=statistics.all.battles,statistics.all.wins" +
+    "&fields=account_id,nickname,statistics.all.battles,statistics.all.wins" +
     "&account_id=" + accountList;
   getCORS(url, function(request) {
     var response = request.currentTarget.response || request.target.responseTetxt;
@@ -66,7 +69,7 @@ function getWotPlayerData(callback, accountList) {
 function getWowsPlayerData(callback, accountList) {
   var url = "https://api.worldofwarships.com/wows/account/info/" +
     "?application_id=" + applicationID +
-    "&fields=statistics.pvp.battles,statistics.pvp.wins" +
+    "&fields=account_id,nickname,statistics.pvp.battles,statistics.pvp.wins" +
     "&account_id=" + accountList;
   getCORS(url, function(request) {
     var response = request.currentTarget.response || request.target.responseTetxt;
@@ -111,20 +114,36 @@ function displayStats(label, data) {
         throw "Battle count must be at least 1.";
       }
       
+      var accountURL = getProfileURL(label, data, account_id);
+      
       var postsElement = $1("div.user_details li.post_count", item);
       var statsElement = postsElement.cloneNode(true);
+      var profileAnchorElement = document.createElement('a');
+      var dataSpanElement = $1("span.row_data", statsElement);
+      var titleSpanElement = $1("span.row_title", statsElement);
+      profileAnchorElement.href = accountURL;
       statsElement.classList.remove('margin-top');
-      $1("span.row_data", statsElement).textContent = winRateText;
-      $1("span.row_title", statsElement).textContent = label + " wins";
+      dataSpanElement.textContent = winRateText;
+      titleSpanElement.textContent = label + " wins";
       Array.prototype.forEach.call(statsElement.children, function(styleItem) {
         styleItem.style['text-shadow'] = '0px 0px 10px ' + winRateColor;
       });
       statsElement.setAttribute('title', battles + ' ' + label + ' battles');
+      statsElement.appendChild(profileAnchorElement);
+      profileAnchorElement.appendChild(dataSpanElement);
+      profileAnchorElement.appendChild(titleSpanElement);
       postsElement.parentElement.insertBefore(statsElement, postsElement.nextSibling);
     } catch (e) {
       // Display nothing if stats not found.
       console.log('Could not display ' + label + ' stats for ' + account_id + ".\n" + e);
     }});
+}
+
+function getProfileURL(label, data, account_id) {
+  var url = profileURLs[label];
+  url = url.replace('%{account_id}', data.data[account_id].account_id);
+  url = url.replace('%{nickname}', data.data[account_id].nickname);
+  return url;
 }
 
 function getWinRateColor(winRate) {
