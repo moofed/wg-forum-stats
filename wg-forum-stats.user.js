@@ -114,7 +114,7 @@ function displayStats(label, data) {
         throw "Battle count must be at least 1.";
       }
       
-      var accountURL = getProfileURL(label, data);
+      var accountURL = getProfileURL(label, data, account_id);
       
       var postsElement = $1("div.user_details li.post_count", item);
       var statsElement = postsElement.cloneNode(true);
@@ -129,7 +129,7 @@ function displayStats(label, data) {
         styleItem.style['text-shadow'] = '0px 0px 10px ' + winRateColor;
       });
       statsElement.setAttribute('title', battles + ' ' + label + ' battles');
-      postsElement.appendChild(profileAnchorElement);
+      statsElement.appendChild(profileAnchorElement);
       profileAnchorElement.appendChild(dataSpanElement);
       profileAnchorElement.appendChild(titleSpanElement);
       postsElement.parentElement.insertBefore(statsElement, postsElement.nextSibling);
@@ -139,8 +139,8 @@ function displayStats(label, data) {
     }});
 }
 
-function getProfileURL(label, data) {
-  var url = profileURLS[label];
+function getProfileURL(label, data, account_id) {
+  var url = profileURLs[label];
   url = url.replace('%{account_id}', data.data[account_id].account_id);
   url = url.replace('%{nickname}', data.data[account_id].nickname);
   return url;
